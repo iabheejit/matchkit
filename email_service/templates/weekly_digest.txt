@@ -1,0 +1,47 @@
+{{ app_name }} - Weekly Match Digest
+Week of {{ week_date }}
+============================================
+
+Hi {{ recipient.first_name }}!
+
+We've found {{ match_count }} recommended matches for {{ recipient.org_name }} that align with your profile.
+
+{% for match in matches %}
+-------------------------------------------
+{{ loop.index }}. {{ match.org.name }}
+   Match Score: {{ "%.0f"|format(match.score * 100) }}%
+
+{% if match.org.description %}
+   {{ match.org.description[:200] }}{% if match.org.description|length > 200 %}...{% endif %}
+
+{% endif %}
+{% if match.org.interests %}
+   Interests: {{ match.org.interests|join(', ') }}
+{% endif %}
+{% if match.org.regions %}
+   Regions: {{ match.org.regions[:5]|join(', ') }}{% if match.org.regions|length > 5 %} (+{{ match.org.regions|length - 5 }} more){% endif %}
+{% endif %}
+
+   Score Breakdown:
+   - Interest Fit: {{ "%.0f"|format(match.interest_score * 100) }}%
+   - Geographic Overlap: {{ "%.0f"|format(match.geo_score * 100) }}%
+
+{% if match.rationale %}
+   Why this match: {{ match.rationale }}
+{% endif %}
+{% if match.profile_url and match.profile_url != "#" %}
+   View Profile: {{ match.profile_url }}
+{% endif %}
+{% if match.org.website %}
+   Website: {{ match.org.website }}
+{% endif %}
+
+{% endfor %}
+-------------------------------------------
+
+You're receiving this because you're a {{ app_name }} member.
+{% if support_email %}
+Reply to this email for feedback or contact {{ support_email }}
+{% endif %}
+
+{{ app_name }} | {{ app_tagline }}

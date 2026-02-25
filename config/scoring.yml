@@ -1,0 +1,91 @@
+# MatchKit — Scoring Configuration
+#
+# Customize how members/organizations are matched.
+# All weights must sum to 1.0. All scores are 0.0–1.0.
+#
+# To use a domain-specific config, copy this file and point to it
+# via the SCORING_CONFIG_PATH environment variable.
+
+weights:
+  embedding: 0.30       # Semantic similarity of profile text
+  interest: 0.25        # Interest/domain complementarity
+  geographic: 0.20      # Geographic overlap
+  size: 0.15            # Organization size compatibility
+  preference: 0.10      # Preference/tag alignment
+
+# Interest/domain pair scores — how well two domains complement each other.
+# Pairs are bidirectional: ("A", "B") also matches ("B", "A").
+# Same-interest score and fallback are configured below.
+interest_pairs:
+  - pair: ["Technology", "Education"]
+    score: 0.9
+  - pair: ["Technology", "Healthcare"]
+    score: 0.85
+  - pair: ["Technology", "Finance"]
+    score: 0.9
+  - pair: ["Healthcare", "Research"]
+    score: 0.95
+  - pair: ["Healthcare", "Wellness"]
+    score: 0.9
+  - pair: ["Education", "Research"]
+    score: 0.95
+  - pair: ["Education", "Youth Development"]
+    score: 0.9
+  - pair: ["Finance", "Business"]
+    score: 0.9
+  - pair: ["Finance", "Legal"]
+    score: 0.85
+  - pair: ["Environment", "Agriculture"]
+    score: 0.85
+  - pair: ["Environment", "Energy"]
+    score: 0.9
+  - pair: ["Arts", "Media"]
+    score: 0.9
+  - pair: ["Arts", "Education"]
+    score: 0.8
+  - pair: ["Social Impact", "Community Development"]
+    score: 0.95
+  - pair: ["Social Impact", "Healthcare"]
+    score: 0.85
+
+# Score when two members share the same interest/domain
+same_interest_score: 0.5
+
+# Fallback score for interest pairs not listed above
+unknown_interest_pair_score: 0.3
+
+# Score when one or both members have no interests listed
+empty_interest_score: 0.3
+
+# Size categories and compatibility scores.
+# Categories are ordered from smallest to largest.
+size_categories:
+  - "Small"
+  - "Medium"
+  - "Large"
+
+size_compatibility:
+  - pair: ["Large", "Small"]
+    score: 0.9
+  - pair: ["Large", "Medium"]
+    score: 0.8
+  - pair: ["Medium", "Small"]
+    score: 0.85
+  - pair: ["Medium", "Medium"]
+    score: 0.9
+  - pair: ["Small", "Small"]
+    score: 0.75
+  - pair: ["Large", "Large"]
+    score: 0.7
+
+# Fallback for unknown size combinations
+unknown_size_score: 0.5
+
+# Size bucketing thresholds for CSV import (employee count → category)
+size_thresholds:
+  - max_employees: 20
+    label: "Small"
+  - max_employees: 100
+    label: "Medium"
+  # Anything above the last threshold is the next category
+  - label: "Large"

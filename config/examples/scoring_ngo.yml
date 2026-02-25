@@ -1,0 +1,81 @@
+# MatchKit — Example Scoring Config for NGO/Nonprofit Networks
+#
+# This is the original Catalyst Match scoring configuration,
+# preserved as an example for NGO-focused deployments.
+
+weights:
+  embedding: 0.30
+  interest: 0.25        # maps to "sector complementarity"
+  geographic: 0.20
+  size: 0.15
+  preference: 0.10      # maps to "beneficiary alignment"
+
+interest_pairs:
+  - pair: ["Health", "Education"]
+    score: 0.9
+  - pair: ["Health", "Women & Gender"]
+    score: 0.85
+  - pair: ["Health", "Nutrition"]
+    score: 0.95
+  - pair: ["Health", "Water & Sanitation"]
+    score: 0.85
+  - pair: ["Education", "Children & Youth"]
+    score: 0.95
+  - pair: ["Education", "Skill Development"]
+    score: 0.9
+  - pair: ["Education", "Digital Literacy"]
+    score: 0.9
+  - pair: ["Livelihood", "Women & Gender"]
+    score: 0.85
+  - pair: ["Livelihood", "Financial Inclusion"]
+    score: 0.9
+  - pair: ["Livelihood", "Skill Development"]
+    score: 0.9
+  - pair: ["Livelihood", "Agriculture"]
+    score: 0.85
+  - pair: ["Environment", "Rural Development"]
+    score: 0.85
+  - pair: ["Environment", "Agriculture"]
+    score: 0.8
+  - pair: ["Environment", "Climate Change"]
+    score: 0.95
+  - pair: ["Rural Development", "Agriculture"]
+    score: 0.9
+  - pair: ["Women & Gender", "Children & Youth"]
+    score: 0.85
+  - pair: ["Disability", "Education"]
+    score: 0.8
+  - pair: ["Disability", "Livelihood"]
+    score: 0.8
+
+same_interest_score: 0.5
+unknown_interest_pair_score: 0.3
+empty_interest_score: 0.3
+
+size_categories:
+  - "Small"
+  - "Medium"
+  - "Large"
+
+size_compatibility:
+  - pair: ["Large", "Small"]
+    score: 0.9
+  - pair: ["Large", "Medium"]
+    score: 0.8
+  - pair: ["Medium", "Small"]
+    score: 0.85
+  - pair: ["Medium", "Medium"]
+    score: 0.9
+  - pair: ["Small", "Small"]
+    score: 0.75
+  - pair: ["Large", "Large"]
+    score: 0.7
+
+unknown_size_score: 0.5
+
+size_thresholds:
+  - max_employees: 20
+    label: "Small"
+  - max_employees: 100
+    label: "Medium"
+  - label: "Large"
