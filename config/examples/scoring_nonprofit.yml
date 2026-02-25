@@ -1,7 +1,7 @@
-# MatchKit — Example Scoring Config for NGO/Nonprofit Networks
+# MatchKit — Example Scoring Config for Nonprofit Networks
 #
-# This is the original Catalyst Match scoring configuration,
-# preserved as an example for NGO-focused deployments.
+# Example scoring configuration for nonprofit-focused deployments.
+# Demonstrates how to define domain-specific interest pairs.
 
 weights:
   embedding: 0.30

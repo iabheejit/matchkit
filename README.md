@@ -17,7 +17,7 @@ MatchKit uses AI-powered semantic embeddings and configurable multi-dimensional 
 - **White-Label Ready** — Brand name, colors, URLs, and email templates are all configurable
 - **Email Digests** — Automated weekly/monthly match digests via Mandrill or SendGrid
 - **REST API** — Full CRUD for organizations, matches, and scheduling
-- **CRM Integration** — Optional Salesforce-compatible two-way sync
+- **CRM Integration** — Optional two-way sync with any OAuth2-compatible CRM
 - **Background Scheduler** — APScheduler for automated match refresh and email delivery
 - **PostgreSQL + pgvector** — Production-ready storage with optional vector similarity search
 
@@ -28,7 +28,7 @@ matchkit/
 ├── api/              # FastAPI routes, schemas, auth
 ├── config/           # Settings + scoring.yml
 │   └── examples/     # Domain-specific scoring configs
-├── crm/              # Optional CRM integration (Salesforce-compatible)
+├── crm/              # Optional CRM integration (OAuth2-compatible)
 ├── db/               # SQLAlchemy session, repositories
 ├── email_service/    # Jinja2 templates, Mandrill/SendGrid senders
 ├── matching/         # Embedding generation, scoring engine, recommendations
@@ -119,7 +119,7 @@ size_compatibility:
   # ...
 ```
 
-See [`config/examples/`](config/examples/) for domain-specific examples (e.g., NGO networks).
+See [`config/examples/`](config/examples/) for domain-specific examples (e.g., nonprofit networks).
 
 ## 🎨 White-Labeling
 

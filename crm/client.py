@@ -1,12 +1,12 @@
 """CRM API client using OAuth2 Client Credentials flow.
 
-Provides two-way sync with a Salesforce-compatible CRM:
+Provides two-way sync with a compatible CRM:
   - Pull: Read Account (org) and Contact (member) records
   - Push: Write match records back to the CRM
 
 This is an optional integration — set CRM_ENABLED=true to activate.
 
-For Salesforce, create a custom object (e.g., Match__c) with fields:
+To use, create a custom object (e.g., Match__c) in your CRM with fields:
   - Source_Organization__c (Lookup → Account)
   - Target_Organization__c (Lookup → Account)
   - Overall_Score__c (Number)
