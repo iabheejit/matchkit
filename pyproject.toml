@@ -7,13 +7,13 @@ name = "matchkit"
 version = "1.0.0"
 description = "Open-source, white-label member engagement and matching platform"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "Apache-2.0"}
 requires-python = ">=3.11"
 keywords = ["matching", "member-engagement", "white-label", "fastapi", "embeddings"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Framework :: FastAPI",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",

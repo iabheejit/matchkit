@@ -35,6 +35,11 @@ pytest --cov=. --cov-report=html   # with coverage
 3. Ensure `ruff check .` and `pytest` pass
 4. Submit a PR with a clear description of the change
 
+## Contribution License
+
+By submitting a contribution, you agree that your contribution is licensed under
+the Apache-2.0 license for this project.
+
 ## Reporting Issues
 
 Please use GitHub Issues with the provided templates for bug reports and feature requests.
