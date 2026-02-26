@@ -6,6 +6,15 @@ from models.entities import (
     EmailDigest,
     MatchStatus,
     EmailDigestStatus,
+    OnboardingSession,
+    OnboardingStatus,
+    ChatRoom,
+    ChatRoomStatus,
+    ChatMessage,
+    MatchFeedback,
+    FeedbackType,
+    EngagementNudge,
+    NudgeType,
 )
 
 __all__ = [
@@ -15,4 +24,13 @@ __all__ = [
     "EmailDigest",
     "MatchStatus",
     "EmailDigestStatus",
+    "OnboardingSession",
+    "OnboardingStatus",
+    "ChatRoom",
+    "ChatRoomStatus",
+    "ChatMessage",
+    "MatchFeedback",
+    "FeedbackType",
+    "EngagementNudge",
+    "NudgeType",
 ]

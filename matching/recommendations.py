@@ -1,4 +1,4 @@
-"""Recommendation engine — orchestrates embeddings + scoring + persistence."""
+"""Recommendation engine — orchestrates embeddings + scoring + persistence + AI explanations."""
 import logging
 from typing import Dict, List
 
@@ -22,8 +22,13 @@ class RecommendationEngine:
         org: Organization,
         all_orgs: List[Organization],
         top_n: int = 10,
+        explain: bool = True,
     ) -> List[Match]:
-        """Generate top-N match recommendations for a single organization."""
+        """Generate top-N match recommendations for a single organization.
+
+        When explain=True and AI is configured, each match gets an
+        LLM-generated rationale explaining why the two profiles match.
+        """
         if org.embedding is None:
             logger.info(f"Generating embedding for {org.name}")
             org.embedding = self.embedding_gen.generate_for_organization(org)
@@ -34,6 +39,22 @@ class RecommendationEngine:
             top_k=top_n,
             min_score=settings.min_match_score,
         )
+
+        # Generate AI explanations for top matches
+        if explain and matches:
+            try:
+                from ai.match_explainer import match_explainer
+                orgs_by_id = {o.id: o for o in all_orgs}
+                for match in matches[:5]:  # Explain top 5 to limit API calls
+                    target_org = orgs_by_id.get(match.target_org_id)
+                    if target_org:
+                        explanation = match_explainer.explain_match_object(
+                            match, org, target_org
+                        )
+                        if explanation:
+                            match.rationale = explanation
+            except Exception as e:
+                logger.warning(f"Failed to generate match explanations: {e}")
 
         logger.info(f"Generated {len(matches)} matches for {org.name}")
         return matches

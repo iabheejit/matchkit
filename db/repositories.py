@@ -13,6 +13,8 @@ from models.entities import (
     Match,
     EmailDigest,
     EmailDigestStatus,
+    MatchFeedback,
+    EngagementNudge,
 )
 
 logger = logging.getLogger(__name__)
@@ -241,3 +243,88 @@ class EmailDigestRepository:
             digest.error_message = error
             await self.session.flush()
         return digest
+
+
+class FeedbackRepository:
+    """CRUD operations for match feedback — drives adaptive scoring."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(self, feedback: MatchFeedback) -> MatchFeedback:
+        self.session.add(feedback)
+        await self.session.flush()
+        return feedback
+
+    async def get_for_match(self, match_id: int) -> Sequence[MatchFeedback]:
+        result = await self.session.execute(
+            select(MatchFeedback).where(MatchFeedback.match_id == match_id)
+        )
+        return result.scalars().all()
+
+    async def get_for_org(self, org_id: int) -> Sequence[MatchFeedback]:
+        result = await self.session.execute(
+            select(MatchFeedback)
+            .where(MatchFeedback.organization_id == org_id)
+            .order_by(MatchFeedback.created_at.desc())
+        )
+        return result.scalars().all()
+
+    async def get_positive_rate(self, org_id: int) -> float:
+        """Get the ratio of positive feedback for an org's matches."""
+        total = await self.session.execute(
+            select(func.count(MatchFeedback.id))
+            .where(MatchFeedback.organization_id == org_id)
+        )
+        positive = await self.session.execute(
+            select(func.count(MatchFeedback.id))
+            .where(MatchFeedback.organization_id == org_id)
+            .where(MatchFeedback.feedback_type.in_(["thumbs_up", "connect"]))
+        )
+        total_count = total.scalar_one()
+        if total_count == 0:
+            return 0.0
+        return positive.scalar_one() / total_count
+
+
+class NudgeRepository:
+    """CRUD operations for engagement nudges."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def create(self, nudge: EngagementNudge) -> EngagementNudge:
+        self.session.add(nudge)
+        await self.session.flush()
+        return nudge
+
+    async def get_recent_for_org(
+        self, org_id: int, limit: int = 10
+    ) -> Sequence[EngagementNudge]:
+        result = await self.session.execute(
+            select(EngagementNudge)
+            .where(EngagementNudge.organization_id == org_id)
+            .order_by(EngagementNudge.created_at.desc())
+            .limit(limit)
+        )
+        return result.scalars().all()
+
+    async def mark_sent(self, nudge_id: int) -> Optional[EngagementNudge]:
+        result = await self.session.execute(
+            select(EngagementNudge).where(EngagementNudge.id == nudge_id)
+        )
+        nudge = result.scalar_one_or_none()
+        if nudge:
+            nudge.sent_at = datetime.utcnow()
+            await self.session.flush()
+        return nudge
+
+    async def mark_acted_on(self, nudge_id: int) -> Optional[EngagementNudge]:
+        result = await self.session.execute(
+            select(EngagementNudge).where(EngagementNudge.id == nudge_id)
+        )
+        nudge = result.scalar_one_or_none()
+        if nudge:
+            nudge.acted_on = True
+            await self.session.flush()
+        return nudge

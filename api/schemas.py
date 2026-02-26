@@ -163,3 +163,118 @@ class HealthResponse(BaseModel):
 class PaginationParams(BaseModel):
     offset: int = Field(default=0, ge=0)
     limit: int = Field(default=50, ge=1, le=500)
+
+
+# ==================== Onboarding Schemas ====================
+
+class OnboardingStartResponse(BaseModel):
+    session_token: str
+    message: str
+
+
+class OnboardingMessageRequest(BaseModel):
+    message: str = Field(..., min_length=1, max_length=2000)
+
+
+class OnboardingMessageResponse(BaseModel):
+    response: str
+    is_complete: bool
+    step: int
+
+
+class OnboardingProfileResponse(BaseModel):
+    organization_id: int
+    name: str
+    extracted_profile: Optional[Dict[str, Any]] = None
+
+
+# ==================== Chat Schemas ====================
+
+class ChatRoomResponse(BaseModel):
+    id: int
+    match_id: int
+    org_a_id: int
+    org_b_id: int
+    org_a_name: Optional[str] = None
+    org_b_name: Optional[str] = None
+    icebreaker: Optional[str] = None
+    status: str
+    unread_count: int = 0
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ChatMessageResponse(BaseModel):
+    id: int
+    room_id: int
+    sender_org_id: Optional[int] = None
+    content: str
+    message_type: str
+    read_at: Optional[datetime] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ChatSendRequest(BaseModel):
+    content: str = Field(..., min_length=1, max_length=2000)
+
+
+class ChatRoomListResponse(BaseModel):
+    rooms: List[ChatRoomResponse]
+    total_count: int
+
+
+class ChatMessageListResponse(BaseModel):
+    room_id: int
+    messages: List[ChatMessageResponse]
+    total_count: int
+
+
+# ==================== Feedback Schemas ====================
+
+class FeedbackTypeEnum(str, Enum):
+    THUMBS_UP = "thumbs_up"
+    THUMBS_DOWN = "thumbs_down"
+    SKIP = "skip"
+    CONNECT = "connect"
+
+
+class MatchFeedbackRequest(BaseModel):
+    feedback_type: FeedbackTypeEnum
+    comment: Optional[str] = None
+
+
+class MatchFeedbackResponse(BaseModel):
+    id: int
+    match_id: int
+    feedback_type: str
+    comment: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ==================== AI Feature Schemas ====================
+
+class ProfileEnrichRequest(BaseModel):
+    text: str = Field(..., min_length=10, max_length=5000)
+
+
+class ProfileEnrichResponse(BaseModel):
+    interests: List[str] = Field(default_factory=list)
+    skills: List[str] = Field(default_factory=list)
+    goals: List[str] = Field(default_factory=list)
+    experience_level: Optional[str] = None
+    industries: List[str] = Field(default_factory=list)
+    looking_for: List[str] = Field(default_factory=list)
+    summary: Optional[str] = None
+
+
+class MatchExplanationResponse(BaseModel):
+    match_id: int
+    explanation: str

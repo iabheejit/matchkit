@@ -213,6 +213,98 @@ class ScheduledJobs:
         self.last_results["match_refresh"] = result
         return result
 
+    async def run_engagement_nudges(self) -> JobResult:
+        """Generate and send AI-powered engagement nudges."""
+        started_at = datetime.utcnow()
+        errors = []
+        details = {"nudges_sent": 0, "nudges_failed": 0}
+
+        try:
+            from ai.nudge_generator import nudge_generator
+            from models.entities import EngagementNudge
+
+            async with async_session_factory() as session:
+                org_repo = OrganizationRepository(session)
+                match_repo = MatchRepository(session)
+                from db.repositories import NudgeRepository
+                nudge_repo = NudgeRepository(session)
+
+                all_orgs = await org_repo.list_all(limit=10000)
+
+                for org in all_orgs:
+                    try:
+                        # Determine nudge type based on activity
+                        matches = await match_repo.get_matches_for_org(org.id, limit=1)
+                        if not matches:
+                            nudge_type = "profile_incomplete"
+                        else:
+                            nudge_type = "match_reminder"
+
+                        context = {
+                            "count": await match_repo.count_for_org(org.id),
+                            "interest": (org.interests[0] if org.interests else "your field"),
+                        }
+
+                        content = nudge_generator.generate(
+                            nudge_type=nudge_type,
+                            profile_text=org.to_profile_text(),
+                            context=context,
+                        )
+
+                        nudge = EngagementNudge(
+                            organization_id=org.id,
+                            nudge_type=nudge_type,
+                            channel="email",
+                            content=content,
+                        )
+                        await nudge_repo.create(nudge)
+
+                        # Send via email if org has contact
+                        if org.contact_email and email_sender.is_configured:
+                            result = email_sender.send(
+                                to_email=org.contact_email,
+                                subject=f"💡 {settings.app_name} — {content[:50]}...",
+                                html_content=f"<p>{content}</p>",
+                                text_content=content,
+                            )
+                            if result.success:
+                                nudge.sent_at = datetime.utcnow()
+                                details["nudges_sent"] += 1
+                            else:
+                                details["nudges_failed"] += 1
+                                errors.append(f"Nudge failed for {org.name}: {result.error}")
+                        else:
+                            details["nudges_sent"] += 1  # Created but not emailed
+
+                    except Exception as e:
+                        details["nudges_failed"] += 1
+                        errors.append(f"Nudge error for {org.name}: {e}")
+
+                await session.commit()
+
+            result = JobResult(
+                job_name="engagement_nudges",
+                success=details["nudges_failed"] == 0,
+                started_at=started_at,
+                completed_at=datetime.utcnow(),
+                records_processed=details["nudges_sent"],
+                errors=errors if errors else None,
+                details=details,
+            )
+
+        except Exception as e:
+            logger.error(f"Engagement nudge job failed: {e}")
+            result = JobResult(
+                job_name="engagement_nudges",
+                success=False,
+                started_at=started_at,
+                completed_at=datetime.utcnow(),
+                errors=[str(e)],
+            )
+
+        self.last_results["engagement_nudges"] = result
+        return result
+
 
 # Singleton instance
 jobs = ScheduledJobs()

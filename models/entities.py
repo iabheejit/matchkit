@@ -33,6 +33,32 @@ class EmailDigestStatus(str, enum.Enum):
     FAILED = "failed"
 
 
+class OnboardingStatus(str, enum.Enum):
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    ABANDONED = "abandoned"
+
+
+class ChatRoomStatus(str, enum.Enum):
+    ACTIVE = "active"
+    ARCHIVED = "archived"
+    BLOCKED = "blocked"
+
+
+class FeedbackType(str, enum.Enum):
+    THUMBS_UP = "thumbs_up"
+    THUMBS_DOWN = "thumbs_down"
+    SKIP = "skip"
+    CONNECT = "connect"
+
+
+class NudgeType(str, enum.Enum):
+    MATCH_REMINDER = "match_reminder"
+    CHAT_FOLLOWUP = "chat_followup"
+    PROFILE_INCOMPLETE = "profile_incomplete"
+    RE_ENGAGEMENT = "re_engagement"
+
+
 # ==================== Models ====================
 
 class Organization(Base):
@@ -208,4 +234,124 @@ class EmailDigest(Base):
     )
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+# ==================== Onboarding ====================
+
+class OnboardingSession(Base):
+    """Conversational onboarding session driven by AI."""
+    __tablename__ = "onboarding_sessions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    organization_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("organizations.id"), nullable=True
+    )
+    session_token: Mapped[str] = mapped_column(String(128), unique=True, index=True)
+    status: Mapped[str] = mapped_column(
+        String(20), default=OnboardingStatus.IN_PROGRESS.value
+    )
+    # Conversation history stored as JSON array of {role, content} dicts
+    conversation: Mapped[Optional[list]] = mapped_column(JSON, default=list)
+    # Extracted structured data from the conversation
+    extracted_profile: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    # Current step in the onboarding flow
+    current_step: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+
+# ==================== Chat ====================
+
+class ChatRoom(Base):
+    """A chat room between two matched organizations/people."""
+    __tablename__ = "chat_rooms"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    match_id: Mapped[int] = mapped_column(
+        ForeignKey("matches.id"), nullable=False, index=True
+    )
+    org_a_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False
+    )
+    org_b_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False
+    )
+    status: Mapped[str] = mapped_column(
+        String(20), default=ChatRoomStatus.ACTIVE.value
+    )
+    # AI-generated icebreaker to start the conversation
+    icebreaker: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    # Relationships
+    match: Mapped["Match"] = relationship(foreign_keys=[match_id])
+    org_a: Mapped["Organization"] = relationship(foreign_keys=[org_a_id])
+    org_b: Mapped["Organization"] = relationship(foreign_keys=[org_b_id])
+    messages: Mapped[List["ChatMessage"]] = relationship(
+        back_populates="room", cascade="all, delete-orphan",
+        order_by="ChatMessage.created_at",
+    )
+
+
+class ChatMessage(Base):
+    """A single message in a chat room."""
+    __tablename__ = "chat_messages"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    room_id: Mapped[int] = mapped_column(
+        ForeignKey("chat_rooms.id"), nullable=False, index=True
+    )
+    sender_org_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("organizations.id"), nullable=True
+    )
+    # sender_org_id is NULL for system/AI messages
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    message_type: Mapped[str] = mapped_column(
+        String(20), default="user"  # "user", "system", "ai_icebreaker"
+    )
+    read_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    room: Mapped["ChatRoom"] = relationship(back_populates="messages")
+
+
+# ==================== Feedback & Engagement ====================
+
+class MatchFeedback(Base):
+    """User feedback on a match — drives adaptive scoring."""
+    __tablename__ = "match_feedback"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    match_id: Mapped[int] = mapped_column(
+        ForeignKey("matches.id"), nullable=False, index=True
+    )
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False
+    )
+    feedback_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    comment: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class EngagementNudge(Base):
+    """Record of AI-generated engagement nudges sent to users."""
+    __tablename__ = "engagement_nudges"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False
+    )
+    nudge_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    channel: Mapped[str] = mapped_column(String(20), default="email")  # "email", "chat", "in_app"
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    opened_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    acted_on: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

@@ -63,8 +63,8 @@ dev = [
 
 [tool.setuptools.packages.find]
 include = [
-    "api*", "config*", "crm*", "db*", "email_service*",
-    "matching*", "models*", "scheduler*", "utils*",
+    "ai*", "api*", "chat*", "config*", "crm*", "db*", "email_service*",
+    "matching*", "models*", "onboarding*", "scheduler*", "utils*",
 ]
 
 [tool.pytest.ini_options]

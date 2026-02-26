@@ -60,6 +60,24 @@ class SchedulerManager:
             replace_existing=True,
         )
 
+        # Engagement nudges
+        if settings.ai_nudges_enabled:
+            nudge_freq = settings.nudge_frequency.lower()
+            if nudge_freq == "monthly":
+                nudge_trigger = CronTrigger(day=15, hour=10, minute=0)
+                nudge_label = "Monthly Engagement Nudges (15th)"
+            else:
+                nudge_trigger = CronTrigger(day_of_week="wed", hour=10, minute=0)
+                nudge_label = "Weekly Engagement Nudges (Wednesdays)"
+
+            self.scheduler.add_job(
+                jobs.run_engagement_nudges,
+                nudge_trigger,
+                id="engagement_nudges",
+                name=nudge_label,
+                replace_existing=True,
+            )
+
     def start(self) -> None:
         if not self._is_running:
             self.setup_jobs()
@@ -109,6 +127,7 @@ class SchedulerManager:
             "weekly_emails": jobs.run_weekly_emails,
             "email_digest": jobs.run_weekly_emails,
             "match_refresh": jobs.run_match_refresh,
+            "engagement_nudges": jobs.run_engagement_nudges,
         }
 
         if job_name not in job_map:

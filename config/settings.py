@@ -70,12 +70,25 @@ class Settings(BaseSettings):
     max_matches_per_email: int = 5
     scoring_config_path: str = "config/scoring.yml"
 
+    # ==================== AI Features ====================
+    ai_explanations_enabled: bool = True
+    ai_icebreakers_enabled: bool = True
+    ai_onboarding_enabled: bool = True
+    ai_nudges_enabled: bool = True
+    ai_profile_enrichment_enabled: bool = True
+
+    # ==================== Chat ====================
+    chat_enabled: bool = True
+    chat_max_message_length: int = 2000
+    chat_history_limit: int = 100
+
     # ==================== Scheduler ====================
     weekly_email_day: str = "monday"
     weekly_email_hour: int = 9
     email_frequency: str = "weekly"  # "weekly" or "monthly"
     monthly_email_day: int = 1  # Day of month (1-28)
     match_refresh_frequency: str = "weekly"  # "weekly" or "monthly"
+    nudge_frequency: str = "weekly"  # how often to send engagement nudges
 
     # ==================== Derived Properties ====================
 
