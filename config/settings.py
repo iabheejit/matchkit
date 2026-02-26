@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     # ==================== Branding (white-label) ====================
     app_name: str = "MatchKit"
-    app_tagline: str = "Member Engagement & Matching Platform"
+    app_tagline: str = "Cofounder & Interest Matching Platform"
     support_email: str = ""
     profile_base_url: str = ""  # e.g. "https://myplatform.com"
     profile_url_pattern: str = "/members/{slug}/"  # appended to profile_base_url

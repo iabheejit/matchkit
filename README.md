@@ -1,8 +1,8 @@
 # 🤝 MatchKit
 
-**Open-source, white-label member engagement and matching platform.**
+**Open-source, white-label cofounder and interest-area matching platform.**
 
-MatchKit uses AI-powered semantic embeddings and configurable multi-dimensional scoring to match organizations and members based on interests, geography, size, and preferences. It delivers automated match digest emails and exposes a full REST API — all fully customizable for your brand and domain.
+Inspired by the YC Co-Founder Matching System, MatchKit uses AI-powered semantic embeddings and configurable multi-dimensional scoring to create recurring connections between people and profiles around shared interests, geography, size, and preferences to help surface potential cofounders. It delivers automated match digest emails and exposes a full REST API — while remaining fully customizable for multi-use-case, multi-domain deployment.
 
 [![License: Apache%202.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -12,11 +12,11 @@ MatchKit uses AI-powered semantic embeddings and configurable multi-dimensional 
 
 ## ✨ Features
 
-- **AI-Powered Matching** — Semantic similarity via Azure OpenAI embeddings
+- **AI-Powered Matching** — Semantic similarity across people and profile data via Azure OpenAI embeddings
 - **Configurable Scoring** — 5 weighted dimensions defined in YAML (no code changes needed)
 - **White-Label Ready** — Brand name, colors, URLs, and email templates are all configurable
 - **Email Digests** — Automated weekly/monthly match digests via Mandrill or SendGrid
-- **REST API** — Full CRUD for organizations, matches, and scheduling
+- **REST API** — Full CRUD for profiles, matches, and scheduling
 - **CRM Integration** — Optional two-way sync with any OAuth2-compatible CRM
 - **Background Scheduler** — APScheduler for automated match refresh and email delivery
 - **PostgreSQL + pgvector** — Production-ready storage with optional vector similarity search
@@ -32,7 +32,7 @@ matchkit/
 ├── db/               # SQLAlchemy session, repositories
 ├── email_service/    # Jinja2 templates, Mandrill/SendGrid senders
 ├── matching/         # Embedding generation, scoring engine, recommendations
-├── models/           # Domain entities (Organization, Member, Match)
+├── models/           # Generic profile entities (Organization, Member, Match)
 ├── scheduler/        # APScheduler jobs and manager
 ├── tests/            # pytest test suite
 └── utils/            # CSV loader, URL helpers, logging
@@ -88,7 +88,7 @@ All settings are configured via environment variables or a `.env` file. See [`.e
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `APP_NAME` | Your platform name | `MatchKit` |
-| `APP_TAGLINE` | Tagline shown in emails | `Member Engagement & Matching Platform` |
+| `APP_TAGLINE` | Tagline shown in emails | `Cofounder & Interest Matching Platform` |
 | `SUPPORT_EMAIL` | Support contact in emails | _(empty)_ |
 | `PROFILE_BASE_URL` | Base URL for member profiles | _(empty)_ |
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql+asyncpg://...localhost.../matchkit` |
@@ -105,7 +105,7 @@ weights:
   embedding: 0.30      # Semantic similarity
   interest: 0.25       # Interest/domain complementarity
   geographic: 0.20     # Geographic overlap
-  size: 0.15           # Organization size compatibility
+  size: 0.15           # Profile/company size compatibility
   preference: 0.10     # Preference/tag alignment
 
 interest_pairs:
@@ -119,7 +119,7 @@ size_compatibility:
   # ...
 ```
 
-See [`config/examples/`](config/examples/) for domain-specific examples (e.g., nonprofit networks).
+See [`config/examples/`](config/examples/) for cofounder-focused and multi-domain scoring examples.
 
 ## 🎨 White-Labeling
 
@@ -137,9 +137,9 @@ All endpoints (except `/health`) require an `X-API-Key` header.
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/health` | Health check |
-| `GET` | `/api/organizations` | List organizations (paginated) |
-| `GET` | `/api/organizations/{id}` | Get organization detail |
-| `GET` | `/api/organizations/{id}/matches` | Get matches for an org |
+| `GET` | `/api/organizations` | List profiles (paginated) |
+| `GET` | `/api/organizations/{id}` | Get profile detail |
+| `GET` | `/api/organizations/{id}/matches` | Get matches for a profile |
 | `POST` | `/api/organizations/{id}/matches/generate` | Generate fresh matches |
 | `PATCH` | `/api/matches/{id}/status` | Update match status |
 | `GET` | `/api/scheduler/status` | Scheduler status |

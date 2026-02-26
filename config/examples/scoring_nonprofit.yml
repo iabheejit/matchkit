@@ -1,7 +1,8 @@
-# MatchKit — Example Scoring Config for Nonprofit Networks
+# MatchKit — Legacy Example Scoring Config for Nonprofit Networks
 #
-# Example scoring configuration for nonprofit-focused deployments.
-# Demonstrates how to define domain-specific interest pairs.
+# Legacy example retained for teams migrating older nonprofit deployments.
+# This file is not the primary project positioning; use cofounder-oriented
+# scoring configs for current default/product messaging.
 
 weights:
   embedding: 0.30

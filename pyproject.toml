@@ -5,11 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "matchkit"
 version = "1.0.0"
-description = "Open-source, white-label member engagement and matching platform"
+description = "Open-source, white-label cofounder and interest-area matching platform"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.11"
-keywords = ["matching", "member-engagement", "white-label", "fastapi", "embeddings"]
+keywords = ["matching", "cofounder-matching", "networking", "white-label", "fastapi", "embeddings"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Framework :: FastAPI",

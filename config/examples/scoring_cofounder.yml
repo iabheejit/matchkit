@@ -1,0 +1,76 @@
+# MatchKit — Example Scoring Config for Cofounder Matching
+#
+# Example scoring configuration for cofounder and startup-network matching.
+# Demonstrates complementary role/domain pairings for early-stage teams.
+# All weights sum to 1.0.
+
+weights:
+  embedding: 0.28
+  interest: 0.27
+  geographic: 0.18
+  size: 0.12
+  preference: 0.15
+
+interest_pairs:
+  - pair: ["Engineering", "Product"]
+    score: 0.95
+  - pair: ["Engineering", "Design"]
+    score: 0.88
+  - pair: ["Engineering", "AI/ML"]
+    score: 0.9
+  - pair: ["Product", "Growth"]
+    score: 0.9
+  - pair: ["Product", "Sales"]
+    score: 0.86
+  - pair: ["Design", "Product"]
+    score: 0.92
+  - pair: ["Growth", "Marketing"]
+    score: 0.95
+  - pair: ["Growth", "Data"]
+    score: 0.87
+  - pair: ["Sales", "Partnerships"]
+    score: 0.9
+  - pair: ["Operations", "Finance"]
+    score: 0.91
+  - pair: ["Finance", "Legal"]
+    score: 0.89
+  - pair: ["AI/ML", "Data"]
+    score: 0.94
+  - pair: ["Climate", "Energy"]
+    score: 0.9
+  - pair: ["HealthTech", "Regulatory"]
+    score: 0.9
+  - pair: ["EdTech", "Community"]
+    score: 0.86
+
+same_interest_score: 0.45
+unknown_interest_pair_score: 0.3
+empty_interest_score: 0.3
+
+size_categories:
+  - "Solo"
+  - "Early Team"
+  - "Scaling"
+
+size_compatibility:
+  - pair: ["Solo", "Solo"]
+    score: 0.88
+  - pair: ["Solo", "Early Team"]
+    score: 0.92
+  - pair: ["Early Team", "Early Team"]
+    score: 0.9
+  - pair: ["Early Team", "Scaling"]
+    score: 0.8
+  - pair: ["Solo", "Scaling"]
+    score: 0.7
+  - pair: ["Scaling", "Scaling"]
+    score: 0.72
+
+unknown_size_score: 0.5
+
+size_thresholds:
+  - max_employees: 1
+    label: "Solo"
+  - max_employees: 15
+    label: "Early Team"
+  - label: "Scaling"
