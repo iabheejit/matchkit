@@ -6,7 +6,7 @@ Bridges the CRM API client with the local PostgreSQL database:
   - push_matches(): DB Matches → CRM custom object
 """
 import logging
-from typing import List, Optional
+from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,13 +15,6 @@ from models.entities import Organization, Member
 from db.repositories import OrganizationRepository, MemberRepository, MatchRepository
 
 logger = logging.getLogger(__name__)
-
-
-def _parse_semicolon_list(value: Optional[str]) -> List[str]:
-    """Parse semicolon-separated multi-select picklist values."""
-    if not value:
-        return []
-    return [v.strip() for v in value.split(";") if v.strip()]
 
 
 def _infer_size(num_employees: Optional[int]) -> str:

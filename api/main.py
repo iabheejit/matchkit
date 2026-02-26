@@ -2,7 +2,7 @@
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import List, Optional
+from typing import AsyncIterator, List, Optional
 
 from fastapi import FastAPI, HTTPException, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 # ==================== Lifespan ====================
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Application lifespan: startup and shutdown."""
     logger.info(f"Starting {settings.app_name} API...")
 
@@ -180,8 +180,8 @@ async def health_check(session: AsyncSession = Depends(get_session)):
         from sqlalchemy import text
         await session.execute(text("SELECT 1"))
         db_ok = True
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Database health check failed: {e}")
 
     from scheduler.manager import scheduler_manager
     sched_running = scheduler_manager._is_running

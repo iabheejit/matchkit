@@ -17,7 +17,7 @@ class SchedulerManager:
         self.scheduler = AsyncIOScheduler()
         self._is_running = False
 
-    def setup_jobs(self):
+    def setup_jobs(self) -> None:
         """Set up all scheduled jobs based on configured frequency."""
         freq = settings.email_frequency.lower()
         if freq == "monthly":
@@ -60,7 +60,7 @@ class SchedulerManager:
             replace_existing=True,
         )
 
-    def start(self):
+    def start(self) -> None:
         if not self._is_running:
             self.setup_jobs()
             self.scheduler.start()
@@ -68,7 +68,7 @@ class SchedulerManager:
             logger.info("Scheduler started")
             self._log_scheduled_jobs()
 
-    def stop(self):
+    def stop(self) -> None:
         if self._is_running:
             self.scheduler.shutdown()
             self._is_running = False
@@ -133,7 +133,7 @@ class SchedulerManager:
         }
         return days.get(day_name.lower(), "mon")
 
-    def _log_scheduled_jobs(self):
+    def _log_scheduled_jobs(self) -> None:
         for job in self.scheduler.get_jobs():
             next_run = (
                 job.next_run_time.strftime("%Y-%m-%d %H:%M") if job.next_run_time else "N/A"
