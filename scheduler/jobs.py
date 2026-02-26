@@ -175,7 +175,7 @@ class ScheduledJobs:
                 logger.info(f"Deleted {deleted} old matches")
 
                 total_created = 0
-                for org_id, matches in all_matches.items():
+                for matches in all_matches.values():
                     if matches:
                         await match_repo.create_many(matches)
                         total_created += len(matches)
