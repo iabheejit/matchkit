@@ -1,8 +1,8 @@
 # 🤝 MatchKit
 
-**Open-source, white-label cofounder and interest-area matching platform.**
+**Open-source, white-label member engagement and matching platform.**
 
-Inspired by the YC Co-Founder Matching System, MatchKit uses AI-powered semantic embeddings, LLM intelligence, and configurable multi-dimensional scoring to create recurring connections between people around shared interests, geography, and preferences to help surface potential cofounders. It features conversational AI onboarding, real-time chat between matches, AI-generated match explanations, engagement nudges, and automated digest emails — all exposed via REST API and WebSocket, fully customizable for any domain.
+MatchKit uses AI-powered semantic embeddings and configurable multi-dimensional scoring to match organizations and members based on interests, geography, size, and preferences. It delivers automated match digest emails and exposes a full REST API — all fully customizable for your brand and domain.
 
 [![License: Apache%202.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -12,37 +12,28 @@ Inspired by the YC Co-Founder Matching System, MatchKit uses AI-powered semantic
 
 ## ✨ Features
 
-- **AI-Powered Matching** — Semantic similarity via Azure OpenAI embeddings with LLM-generated match explanations
-- **Conversational Onboarding** — AI chatbot replaces static forms, extracting structured profiles through natural dialogue
-- **Real-Time Chat** — WebSocket-powered messaging between matches with AI-generated icebreakers
-- **Match Explanations** — Every match comes with a human-readable rationale explaining *why* two profiles complement each other
-- **Adaptive Scoring** — User feedback (👍/👎/connect/skip) drives continuous matching improvement
-- **Engagement Nudges** — AI-generated personalized reminders sent via email or in-app to keep users active
-- **Profile Enrichment** — LLM extracts skills, interests, intent, and goals from free-text input
+- **AI-Powered Matching** — Semantic similarity via Azure OpenAI embeddings
 - **Configurable Scoring** — 5 weighted dimensions defined in YAML (no code changes needed)
 - **White-Label Ready** — Brand name, colors, URLs, and email templates are all configurable
-- **Email + Chat** — Automated digest emails alongside real-time chat for connecting with matches
-- **REST API + WebSocket** — Full CRUD API plus real-time WebSocket for chat
+- **Email Digests** — Automated weekly/monthly match digests via Mandrill or SendGrid
+- **REST API** — Full CRUD for organizations, matches, and scheduling
 - **CRM Integration** — Optional two-way sync with any OAuth2-compatible CRM
-- **Background Scheduler** — APScheduler for match refresh, email delivery, and engagement nudges
+- **Background Scheduler** — APScheduler for automated match refresh and email delivery
 - **PostgreSQL + pgvector** — Production-ready storage with optional vector similarity search
 
 ## 🏗️ Architecture
 
 ```
 matchkit/
-├── ai/               # 🧠 LLM client, profile enrichment, explanations, icebreakers, nudges
-├── api/              # FastAPI routes, schemas, auth, WebSocket endpoints
-├── chat/             # 💬 Real-time chat manager, service, WebSocket connections
+├── api/              # FastAPI routes, schemas, auth
 ├── config/           # Settings + scoring.yml
-│   └── examples/     # Domain-specific scoring configs (cofounder, nonprofit, etc.)
+│   └── examples/     # Domain-specific scoring configs
 ├── crm/              # Optional CRM integration (OAuth2-compatible)
 ├── db/               # SQLAlchemy session, repositories
 ├── email_service/    # Jinja2 templates, Mandrill/SendGrid senders
-├── matching/         # Embedding generation, scoring engine, AI-enhanced recommendations
-├── models/           # Domain entities (profiles, matches, chat, feedback, nudges)
-├── onboarding/       # 🤖 Conversational AI onboarding engine
-├── scheduler/        # APScheduler jobs (emails, match refresh, nudges)
+├── matching/         # Embedding generation, scoring engine, recommendations
+├── models/           # Domain entities (Organization, Member, Match)
+├── scheduler/        # APScheduler jobs and manager
 ├── tests/            # pytest test suite
 └── utils/            # CSV loader, URL helpers, logging
 ```
@@ -97,18 +88,13 @@ All settings are configured via environment variables or a `.env` file. See [`.e
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `APP_NAME` | Your platform name | `MatchKit` |
-| `APP_TAGLINE` | Tagline shown in emails | `Cofounder & Interest Matching Platform` |
+| `APP_TAGLINE` | Tagline shown in emails | `Member Engagement & Matching Platform` |
 | `SUPPORT_EMAIL` | Support contact in emails | _(empty)_ |
 | `PROFILE_BASE_URL` | Base URL for member profiles | _(empty)_ |
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql+asyncpg://...localhost.../matchkit` |
 | `AZURE_OPENAI_ENDPOINT` | Azure OpenAI endpoint | _(empty — disables embeddings)_ |
 | `API_KEY` | API authentication key | `dev-api-key-change-in-production` |
 | `SCORING_CONFIG_PATH` | Path to scoring YAML | `config/scoring.yml` |
-| `AI_EXPLANATIONS_ENABLED` | Generate AI match explanations | `true` |
-| `AI_ICEBREAKERS_ENABLED` | Generate AI chat icebreakers | `true` |
-| `AI_ONBOARDING_ENABLED` | Enable conversational onboarding | `true` |
-| `AI_NUDGES_ENABLED` | Enable engagement nudges | `true` |
-| `CHAT_ENABLED` | Enable real-time chat | `true` |
 
 ### Scoring Configuration
 
@@ -119,7 +105,7 @@ weights:
   embedding: 0.30      # Semantic similarity
   interest: 0.25       # Interest/domain complementarity
   geographic: 0.20     # Geographic overlap
-  size: 0.15           # Profile/company size compatibility
+  size: 0.15           # Organization size compatibility
   preference: 0.10     # Preference/tag alignment
 
 interest_pairs:
@@ -133,7 +119,7 @@ size_compatibility:
   # ...
 ```
 
-See [`config/examples/`](config/examples/) for cofounder-focused and multi-domain scoring examples.
+See [`config/examples/`](config/examples/) for domain-specific examples (e.g., nonprofit networks).
 
 ## 🎨 White-Labeling
 
@@ -151,31 +137,13 @@ All endpoints (except `/health`) require an `X-API-Key` header.
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/health` | Health check |
-| | **Profiles** | |
-| `GET` | `/api/organizations` | List profiles (paginated) |
-| `GET` | `/api/organizations/{id}` | Get profile detail |
-| | **Matching** | |
-| `GET` | `/api/organizations/{id}/matches` | Get matches for a profile |
-| `POST` | `/api/organizations/{id}/matches/generate` | Generate fresh matches with AI explanations |
+| `GET` | `/api/organizations` | List organizations (paginated) |
+| `GET` | `/api/organizations/{id}` | Get organization detail |
+| `GET` | `/api/organizations/{id}/matches` | Get matches for an org |
+| `POST` | `/api/organizations/{id}/matches/generate` | Generate fresh matches |
 | `PATCH` | `/api/matches/{id}/status` | Update match status |
-| `POST` | `/api/matches/{id}/feedback` | Submit feedback (👍/👎/connect/skip) |
-| `GET` | `/api/ai/explain-match/{id}` | Get AI-generated match explanation |
-| | **Onboarding** | |
-| `POST` | `/api/onboarding/start` | Start conversational AI onboarding |
-| `POST` | `/api/onboarding/{token}/message` | Send message in onboarding chat |
-| `POST` | `/api/onboarding/{token}/complete` | Finalize and create profile |
-| | **Chat** | |
-| `POST` | `/api/chat/rooms/{match_id}` | Get/create chat room (with AI icebreaker) |
-| `GET` | `/api/chat/rooms?org_id=X` | List chat rooms for a profile |
-| `GET` | `/api/chat/rooms/{id}/messages` | Get message history |
-| `POST` | `/api/chat/rooms/{id}/messages` | Send message (REST) |
-| `POST` | `/api/chat/rooms/{id}/read` | Mark messages as read |
-| `WS` | `/ws/chat/{room_id}?org_id=X&api_key=Y` | Real-time WebSocket chat |
-| | **AI** | |
-| `POST` | `/api/ai/enrich-profile` | Extract structured data from free text |
-| | **Email & Scheduler** | |
 | `GET` | `/api/scheduler/status` | Scheduler status |
-| `POST` | `/api/scheduler/trigger/{job}` | Trigger a job (emails, refresh, nudges) |
+| `POST` | `/api/scheduler/trigger/{job}` | Trigger a job manually |
 | `POST` | `/api/email/send-test` | Send a test digest email |
 | `GET` | `/api/email/preview/{org_id}` | Preview digest HTML |
 

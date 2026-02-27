@@ -40,3 +40,4 @@ coverage.xml
 # Generated
 data/preview/
 data/sample_emails/
+matchkit_test.db

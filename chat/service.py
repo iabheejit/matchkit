@@ -22,7 +22,13 @@ class ChatService:
         """Get existing chat room for a match, or create one with an AI icebreaker."""
         # Check for existing room
         result = await self.session.execute(
-            select(ChatRoom).where(ChatRoom.match_id == match_id)
+            select(ChatRoom)
+            .where(ChatRoom.match_id == match_id)
+            .options(
+                selectinload(ChatRoom.org_a),
+                selectinload(ChatRoom.org_b),
+                selectinload(ChatRoom.match),
+            )
         )
         room = result.scalar_one_or_none()
         if room:
@@ -38,9 +44,13 @@ class ChatService:
         if not match:
             return None
 
-        # Generate AI icebreaker
-        icebreaker = icebreaker_generator.generate_for_match(
-            match, match.source_org, match.target_org
+        # Pre-extract profile text while in async context, then generate icebreaker
+        profile_a = match.source_org.to_profile_text()
+        profile_b = match.target_org.to_profile_text()
+        icebreaker = icebreaker_generator.generate(
+            profile_a=profile_a,
+            profile_b=profile_b,
+            match_explanation=match.rationale,
         )
 
         # Create room
@@ -65,7 +75,18 @@ class ChatService:
             await self.session.flush()
 
         logger.info(f"Created chat room {room.id} for match {match_id}")
-        return room
+
+        # Reload with relationships for the response
+        reload_result = await self.session.execute(
+            select(ChatRoom)
+            .where(ChatRoom.id == room.id)
+            .options(
+                selectinload(ChatRoom.org_a),
+                selectinload(ChatRoom.org_b),
+                selectinload(ChatRoom.match),
+            )
+        )
+        return reload_result.scalar_one()
 
     async def send_message(
         self,
